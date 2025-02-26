@@ -6,23 +6,20 @@
 
 import numpy as np
 import torch
-import torch_geometric
-from torch.nn import functional as F
+import torch.nn as nn
+import torch.nn.functional as F
+# import torch_geometric  # 注释掉这行
 
 
-def choose_net(network_name):
-    if network_name == 'mlp':
+def choose_net(name):
+    if name == 'mlp':
         return MLPnet
-    elif network_name == 'gru':
-        return GRUNet
-    elif network_name == 'lstm':
-        return LSTMNet
-    elif network_name == 'gin':
-        return GinEncoderGraph
-    elif network_name == 'dilated_conv':
+    elif name == 'dilated_conv':
         return DilatedConvEncoder
+    # elif name == 'gin':  # 注释掉图网络相关代码
+    #     return GIN
     else:
-        raise NotImplementedError("")
+        raise NotImplementedError('unsupported network')
 
 
 def choose_act_func(activation):
@@ -43,16 +40,16 @@ def choose_act_func(activation):
     return act_module, act_f
 
 
-def choose_pooling_func(pooling):
-    if pooling == 'sum':
-        pool_f = torch_geometric.nn.global_add_pool
-    elif pooling == 'mean':
-        pool_f = torch_geometric.nn.global_mean_pool
-    elif pooling == 'max':
-        pool_f = torch_geometric.nn.global_max_pool
-    else:
-        raise NotImplementedError('')
-    return pool_f
+# def choose_pooling_func(pooling):
+#     if pooling == 'sum':
+#         pool_f = torch_geometric.nn.global_add_pool
+#     elif pooling == 'mean':
+#         pool_f = torch_geometric.nn.global_mean_pool
+#     elif pooling == 'max':
+#         pool_f = torch_geometric.nn.global_max_pool
+#     else:
+#         raise NotImplementedError('')
+#     return pool_f
 
 
 class MLPnet(torch.nn.Module):
@@ -298,6 +295,8 @@ class DilatedConvEncoder(torch.nn.Module):
         return x
 
 
+# 保留GIN网络的代码，但暂时注释掉
+'''
 class GinEncoderGraph(torch.nn.Module):
     def __init__(self, n_features, n_hidden, n_emb, n_layers,
                  pooling='sum', activation='relu'):
@@ -341,3 +340,4 @@ class GinEncoderGraph(torch.nn.Module):
         xpool = self.pool_f(xs[-1], batch)
 
         return xpool, torch.cat(xs, 1)
+'''

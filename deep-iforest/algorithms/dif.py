@@ -13,7 +13,7 @@ from sklearn.ensemble import IsolationForest
 from tqdm import tqdm
 from multiprocessing import Pool
 from torch.utils.data import DataLoader
-from torch_geometric.loader import DataLoader as pyGDataLoader
+# from torch_geometric.loader import DataLoader as pyGDataLoader
 from algorithms import net_torch
 
 
@@ -117,13 +117,19 @@ class DIF:
         self.new_score_func = new_score_func
         self.new_ensemble_method = new_ensemble_method
 
-        self.device = device
+        # 自动检测是否可以使用CUDA
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if verbose >= 1:
+            print(f'Using device: {self.device}')
+
         self.n_processes = n_processes
         self.verbose = verbose
 
         self.network_args = network_args
         self.Net = net_torch.choose_net(network_name)
         if network_name == 'mlp':
+            if isinstance(hidden_dim, str):
+                hidden_dim = [int(x) for x in hidden_dim.split(',')]
             self.network_args['n_hidden'] = hidden_dim
             self.network_args['n_emb'] = rep_dim
             self.network_args['skip_connection'] = skip_connection
@@ -166,7 +172,7 @@ class DIF:
         """
         start_time = time.time()
         self.n_features = X.shape[-1] if self.data_type != 'graph' else max(X.num_features, 1)
-        ensemble_seeds = np.random.randint(0, 1e+5, self.n_ensemble)
+        ensemble_seeds = np.random.randint(0, 1e+5, self.n_ensemble).tolist()
 
         if self.verbose >= 2:
             net = self.Net(n_features=self.n_features, **self.network_args)
@@ -288,19 +294,22 @@ class DIF:
                     batch_x_reduced = net(batch_x)
                     x_reduced.append(batch_x_reduced)
             else:
-                loader = pyGDataLoader(X, batch_size=self.batch_size, shuffle=False, pin_memory=True, drop_last=False)
-                for data in loader:
-                    data.to(self.device)
-                    x, edge_index, batch = data.x, data.edge_index, data.batch
-                    if x is None:
-                        x = torch.ones((batch.shape[0], 1)).to(self.device)
-                    x, _ = net(x, edge_index, batch)
-                    x_reduced.append(x)
+                # 暂时注释掉图数据处理的代码，等安装好PyG后再启用
+                # loader = pyGDataLoader(X, batch_size=self.batch_size, shuffle=False, pin_memory=True, drop_last=False)
+                # for data in loader:
+                #     data.to(self.device)
+                #     x, edge_index, batch = data.x, data.edge_index, data.batch
+                #     if x is None:
+                #         x = torch.ones((batch.shape[0], 1)).to(self.device)
+                #     x, _ = net(x, edge_index, batch)
+                #     x_reduced.append(x)
+                print("图数据处理功能暂时禁用，请先安装PyG相关依赖")
+                pass
 
-        x_reduced = torch.cat(x_reduced).data.cpu().numpy()
-        x_reduced = StandardScaler().fit_transform(x_reduced)
-        x_reduced = np.tanh(x_reduced)
-        return x_reduced
+            x_reduced = torch.cat(x_reduced).data.cpu().numpy()
+            x_reduced = StandardScaler().fit_transform(x_reduced)
+            x_reduced = np.tanh(x_reduced)
+            return x_reduced
 
     def deep_transfer_batch_ensemble(self, X, net):
         x_reduced = []
@@ -335,8 +344,9 @@ class DIF:
     @staticmethod
     def set_seed(seed):
         torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
         np.random.seed(seed)
         random.seed(seed)
 

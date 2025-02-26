@@ -84,16 +84,20 @@ for dataset_name in data_lst:
     # But the training and testing data of Tox21 datasets may have different shapes of node labels.
     # padding here to obtain the same length of node attributes
     print(graphs_test.num_features, graphs_train.num_features)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
     if graphs_test.num_features != graphs_train.num_features:
         print('padding')
         if graphs_train.num_features > graphs_test.num_features:
             padding_dim = graphs_train.num_features - graphs_test.num_features
             n_test = graphs_test.data.x.shape[0]
-            graphs_test.data.x = torch.cat([graphs_test.data.x, torch.zeros(n_test, padding_dim)], dim=1)
+            graphs_test.data.x = torch.cat([graphs_test.data.x, 
+                torch.zeros(n_test, padding_dim, device=device)], dim=1)
         else:
             padding_dim = graphs_test.num_features - graphs_train.num_features
             n_train = graphs_train.data.x.shape[0]
-            graphs_train.data.x = torch.cat([graphs_train.data.x, torch.zeros(n_train, padding_dim)], dim=1)
+            graphs_train.data.x = torch.cat([graphs_train.data.x, 
+                torch.zeros(n_train, padding_dim, device=device)], dim=1)
 
 
     # use the minority class as anomaly class
