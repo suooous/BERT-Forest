@@ -21,24 +21,42 @@ import data_preprocess
 import open_dataset_deal
 
 _category = 120 # dataset class
-dataset_dir = "I:\\datasets\\" # the path to save dataset for dine-tuning
+# 用于存储用于微调fine-tuning的tsv文件
+dataset_dir = "D:\\BERT_Forest\\ET-BERT-Forest\\ET-BERT\\dataset_fine_tuning\\" # the path to save dataset for dine-tuning
 
-pcap_path, dataset_save_path, samples, features, dataset_level = "I:\\cstnet-tls1.3\\packet\\splitcap\\", "I:\\cstnet-tls1.3\\packet\\result\\", [5000], ["payload"], "packet"
+# pcap_path: 原始的pcap文件路径
+# dataset_save_path: 用于存储在训练过程中生成的数据集文件
+# samples: 每个类别的样本数量
+# features: 特征
+# dataset_level: 数据集的级别
+pcap_path = "I:\\cstnet-tls1.3\\packet\\splitcap\\"
+dataset_save_path = "D:\\BERT_Forest\\ET-BERT-Forest\\ET-BERT\\datasets\\CSTNET-TLS 1.3\\packet\\result\\"
+samples = [5000]
+features = ["payload"]
+dataset_level = "packet"
 
+# 传入的参数是模型
 def dataset_extract(model):
     
+    # 这个X_dataset和Y_dataset分别表示特征和标签的数据集
     X_dataset = {}
     Y_dataset = {}
 
     try:
+        # 尝试读取
         if os.listdir(dataset_save_path + "dataset\\"):
             print("Reading dataset from %s ..." % (dataset_save_path + "dataset\\"))
             
-            x_payload_train, x_payload_test, x_payload_valid,\
-            y_train, y_test, y_valid = \
-                np.load(dataset_save_path + "dataset\\x_datagram_train.npy",allow_pickle=True), np.load(dataset_save_path + "dataset\\x_datagram_test.npy",allow_pickle=True), np.load(dataset_save_path + "dataset\\x_datagram_valid.npy",allow_pickle=True),\
-                np.load(dataset_save_path + "dataset\\y_train.npy",allow_pickle=True), np.load(dataset_save_path + "dataset\\y_test.npy",allow_pickle=True), np.load(dataset_save_path + "dataset\\y_valid.npy",allow_pickle=True)
-            
+            # 加载数据集
+            x_payload_train = np.load(dataset_save_path + "dataset\\x_datagram_train.npy", allow_pickle=True)
+            x_payload_test = np.load(dataset_save_path + "dataset\\x_datagram_test.npy", allow_pickle=True)  
+            x_payload_valid = np.load(dataset_save_path + "dataset\\x_datagram_valid.npy", allow_pickle=True)
+            y_train = np.load(dataset_save_path + "dataset\\y_train.npy", allow_pickle=True)
+            y_test = np.load(dataset_save_path + "dataset\\y_test.npy", allow_pickle=True)
+            y_valid = np.load(dataset_save_path + "dataset\\y_valid.npy", allow_pickle=True)
+
+
+            # 将对应的npy文件转化为
             X_dataset, Y_dataset = models_deal(model, X_dataset, Y_dataset,
                                                x_payload_train, x_payload_test,
                                                x_payload_valid,
@@ -49,12 +67,16 @@ def dataset_extract(model):
         print(e)
         print("Dataset directory %s not exist.\nBegin to obtain new dataset."%(dataset_save_path + "dataset\\"))
 
+    # 如果数据集不存在，则生成数据集，从pcap文件中生成，保存到dataset_save_path中，生成的还是npy文件
     X,Y = dataset_generation.generation(pcap_path, samples, features, splitcap=False, dataset_save_path=dataset_save_path,dataset_level=dataset_level)
 
     dataset_statistic = [0] * _category
 
+    # X_payload和Y_all分别表示特征和标签的数据集
     X_payload= []
     Y_all = []
+
+    # 遍历Y,将每个标签转化为整数，并添加到Y_all列表
     for app_label in Y:
         for label in app_label:
             Y_all.append(int(label))
@@ -137,12 +159,14 @@ def dataset_extract(model):
     return X_dataset,Y_dataset
 
 def models_deal(model, X_dataset, Y_dataset, x_payload_train, x_payload_test, x_payload_valid, y_train, y_test, y_valid):
+    # 遍历模型
     for index in range(len(model)):
         print("Begin to model %s dealing..."%model[index])
         x_train_dataset = []
         x_test_dataset = []
         x_valid_dataset = []
 
+        # 如果模型是pre-train，则将训练集、测试集和验证集的数据和标签保存为tsv文件，就是用于生fine-tuning的tsv文件
         if model[index] == "pre-train":
             save_dir = dataset_dir
             write_dataset_tsv(x_payload_train, y_train, save_dir, "train")
@@ -160,15 +184,22 @@ def models_deal(model, X_dataset, Y_dataset, x_payload_train, x_payload_test, x_
 
     return X_dataset, Y_dataset
 
+# 将文本数据和对应的标签保存为tsv文件
+# 出入的参数组合类似于   x_payload_train, y_train, save_dir, "train"
 def write_dataset_tsv(data,label,file_dir,type):
     dataset_file = [["label", "text_a"]]
+
+    # 遍历这个label列表，将每个标签和对应的文本数据添加到dataset_file列表中
     for index in range(len(label)):
         dataset_file.append([label[index], data[index]])
+    
+    # 将dataset_file列表写入到文件中
     with open(file_dir + type + "_dataset.tsv", 'w',newline='') as f:
         tsv_w = csv.writer(f, delimiter='\t')
         tsv_w.writerows(dataset_file)
     return 0
 
+# 从带标签的数据集中提取无标签的文本数据，并保存为新的文件
 def unlabel_data(label_data):
     nolabel_data = ""
     with open(label_data,newline='') as f:

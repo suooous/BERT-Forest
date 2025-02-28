@@ -23,6 +23,7 @@ random.seed(40)
 word_dir = "I:/corpora/"
 word_name = "encrypted_burst.txt"
 
+# 将pcapng文件转换为pcap文件
 def convert_pcapng_2_pcap(pcapng_path, pcapng_file, output_path):
     
     pcap_file = output_path + pcapng_file.replace('pcapng','pcap')
@@ -31,13 +32,16 @@ def convert_pcapng_2_pcap(pcapng_path, pcapng_file, output_path):
     os.system(command)
     return 0
 
+# 将pcap文件转换为流文件
 def split_cap(pcap_path, pcap_file, pcap_name, pcap_label='', dataset_level = 'flow'):
     
+    # 如果splitcap文件夹不存在，则创建一个
     if not os.path.exists(pcap_path + "\\splitcap"):
         os.mkdir(pcap_path + "\\splitcap")
+    # 如果标签存在，则创建一个标签文件夹
     if pcap_label != '':
         if not os.path.exists(pcap_path + "\\splitcap\\" + pcap_label):
-            os.mkdir(pcap_path + "\\splitcap\\" + pcap_label)
+            os.mkdir(pcap_path + "\\splitcap\\" + pcap_label)  
         if not os.path.exists(pcap_path + "\\splitcap\\" + pcap_label + "\\" + pcap_name):
             os.mkdir(pcap_path + "\\splitcap\\" + pcap_label + "\\" + pcap_name)
    

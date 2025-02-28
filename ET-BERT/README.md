@@ -1,4 +1,4 @@
-# ET-BERT: A Contextualized Datagram Representation with Pre-training Transformers for Encrypted Traffic Classification
+# ET-BERT: 使用预训练 Transformer 对加密流量进行上下文数据报表示的分类方法
 
 <!-- 
 [![codebeat badge](https://codebeat.co/badges/f75fab90-6d00-44b4-bb42-d19067400243)](https://codebeat.co/projects/github-com-linwhitehat-et-bert-main) 
@@ -13,33 +13,33 @@
   <a href='https://dl.acm.org/doi/10.1145/3485447.3512217' target='_blank'><img src="https://img.shields.io/badge/WWW'22-Paper-blue"></a>
 </p>
 
-**Note:**
-- ⭐ **Please leave a <font color='orange'>STAR</font> if you like this project!** ⭐
-- If you find any <font color='red'>incorrect</font> / <font color='red'>inappropriate</font> / <font color='red'>outdated</font> content, please kindly consider opening an issue or a PR. 
+**注意：**
+- ⭐ **如果您喜欢这个项目，请给我们一个<font color='orange'>星标</font>！** ⭐
+- 如果您发现任何<font color='red'>错误</font>/<font color='red'>不当</font>/<font color='red'>过时</font>的内容，欢迎提出 issue 或 PR。
 
-**The repository of ET-BERT, a network traffic classification model on encrypted traffic.**
+**这是 ET-BERT 的代码仓库，一个用于加密流量分类的网络流量分类模型。**
 
-ET-BERT is a method for learning datagram contextual relationships from encrypted traffic, which could be **directly applied to different encrypted traffic scenarios and accurately identify classes of traffic**. First, ET-BERT employs multi-layer attention in large scale unlabelled traffic to learn both inter-datagram contextual and inter-traffic transport relationships. Second, ET-BERT could be applied to a specific scenario to identify traffic types by fine-tuning the labeled encrypted traffic on a small scale.
+ET-BERT 是一种从加密流量中学习数据报上下文关系的方法，可以**直接应用于不同的加密流量场景并准确识别流量类别**。首先，ET-BERT 在大规模未标记流量中使用多层注意力机制来学习数据报间的上下文关系和流量间的传输关系。其次，通过对小规模标记加密流量进行微调，ET-BERT 可以应用于特定场景来识别流量类型。
 
-![The framework of ET-BERT](images/etbert.png)
+![ET-BERT 框架](images/etbert.png)
 
-The work is introduced in the *[31st The Web Conference](https://www2022.thewebconf.org/)*:
-> Xinjie Lin, Gang Xiong, Gaopeng Gou, Zhen Li, Junzheng Shi and Jing Yu. 2022. ET-BERT: A Contextualized Datagram Representation with Pre-training Transformers for Encrypted Traffic Classification. In Proceedings of The Web Conference (WWW) 2022, Lyon, France. Association for Computing Machinery. 
+本工作发表于 *[第31届万维网国际会议](https://www2022.thewebconf.org/)*:
+> Xinjie Lin, Gang Xiong, Gaopeng Gou, Zhen Li, Junzheng Shi and Jing Yu. 2022. ET-BERT: A Contextualized Datagram Representation with Pre-training Transformers for Encrypted Traffic Classification. In Proceedings of The Web Conference (WWW) 2022, Lyon, France. Association for Computing Machinery.
 
-Note: this code is based on [UER-py](https://github.com/dbiir/UER-py). Many thanks to the authors.
+注：本代码基于 [UER-py](https://github.com/dbiir/UER-py)。非常感谢作者们的工作。
 <br/>
 
-Table of Contents
+目录
 =================
-  * [Requirements](#requirements)
-  * [Datasets](#datasets)
-  * [Using ET-BERT](#using-et-bert)
-  * [Reproduce ET-BERT](#reproduce-et-bert)
-  * [Citation](#citation)
-  * [Contact](#contact)
+  * [环境要求](#环境要求)
+  * [数据集](#数据集)
+  * [使用 ET-BERT](#使用-et-bert)
+  * [复现 ET-BERT](#复现-et-bert)
+  * [引用](#引用)
+  * [联系方式](#联系方式)
 <br/>
 
-## Requirements
+## 环境要求
 * Python >= 3.6
 * CUDA: 11.4
 * GPU: Tesla V100S
@@ -53,26 +53,26 @@ Table of Contents
 * tshark
 * [SplitCap](https://www.netresec.com/?page=SplitCap)
 * [scikit-learn](https://scikit-learn.org/stable/)
-* For the mixed precision training you will need apex from NVIDIA
-* For the pre-trained model conversion (related with TensorFlow) you will need TensorFlow
-* For the tokenization with wordpiece model you will need [WordPiece](https://github.com/huggingface/tokenizers)
-* For the use of CRF in sequence labeling downstream task you will need [pytorch-crf](https://github.com/kmkurn/pytorch-crf)
+* 对于混合精度训练，您需要 NVIDIA 的 apex
+* 对于预训练模型转换（与 TensorFlow 相关），您需要 TensorFlow
+* 对于使用 wordpiece 模型进行分词，您需要 [WordPiece](https://github.com/huggingface/tokenizers)
+* 对于在序列标注下游任务中使用 CRF，您需要 [pytorch-crf](https://github.com/kmkurn/pytorch-crf)
 <br/>
 
-## Datasets
-The real-world TLS 1.3 dataset is collected from March to July 2021 on China Science and Technology Network (CSTNET). For privacy considerations, we only release the anonymous data (see in [CSTNET-TLS 1.3](CSTNET-TLS%201.3/readme.md)).
+## 数据集
+真实世界的 TLS 1.3 数据集收集自 2021 年 3 月至 7 月的中国科技网（CSTNET）。出于隐私考虑，我们只发布匿名数据（参见 [CSTNET-TLS 1.3](CSTNET-TLS%201.3/readme.md)）。
 
-Other datasets we used for comparison experiments are publicly available, see the [paper](https://arxiv.org/abs/2202.06335) for more details. If you want to use your own data, please check if the data format is the same as `datasets/cstnet-tls1.3/` and specify the data path in `data_process/`.
+我们用于对比实验的其他数据集是公开可用的，详情请参见[论文](https://arxiv.org/abs/2202.06335)。如果您想使用自己的数据，请检查数据格式是否与 `datasets/cstnet-tls1.3/` 相同，并在 `data_process/` 中指定数据路径。
 
 <br/>
 
-## Using ET-BERT
-You can now use ET-BERT directly through the pre-trained [model](https://drive.google.com/file/d/1r1yE34dU2W8zSqx1FkB8gCWri4DQWVtE/view?usp=sharing) or download via:
+## 使用 ET-BERT
+您现在可以通过预训练[模型](https://drive.google.com/file/d/1r1yE34dU2W8zSqx1FkB8gCWri4DQWVtE/view?usp=sharing)直接使用 ET-BERT，或通过以下命令下载：
 ```
 wget -O pretrained_model.bin https://drive.google.com/file/d/1r1yE34dU2W8zSqx1FkB8gCWri4DQWVtE/view?usp=sharing
 ```
 
-After obtaining the pre-trained model, ET-BERT could be applied to the spetic task by fine-tuning at packet-level with labeled network traffic:
+获得预训练模型后，可以通过对标记网络流量进行包级别的微调，将 ET-BERT 应用于特定任务：
 ```
 python3 fine-tuning/run_classifier.py --pretrained_model_path models/pre-trained_model.bin \
                                    --vocab_path models/encryptd_vocab.txt \
@@ -84,7 +84,7 @@ python3 fine-tuning/run_classifier.py --pretrained_model_path models/pre-trained
                                    --seq_length 128 --learning_rate 2e-5
 ```
 
-The default path of the fine-tuned classifier model is `models/finetuned_model.bin`. Then you can do inference with the fine-tuned model:
+微调后的分类器模型默认保存路径为 `models/finetuned_model.bin`。然后您可以使用微调后的模型进行推理：
 ```
 python3 inference/run_classifier_infer.py --load_model_path models/finetuned_model.bin \
                                           --vocab_path models/encryptd_vocab.txt \
@@ -95,20 +95,20 @@ python3 inference/run_classifier_infer.py --load_model_path models/finetuned_mod
 ```
 <br/>
 
-## Reproduce ET-BERT
-### Pre-process
-To reproduce the steps necessary to pre-train ET-BERT on network traffic data, follow the following steps:
- 1. Run `vocab_process/main.py` to generate the encrypted traffic corpus or directly use the generated corpus in `corpora/`. Note you'll need to change the file paths and some configures at the top of the file.
- 2. Run `main/preprocess.py` to pre-process the encrypted traffic burst corpus.
+## 复现 ET-BERT
+### 预处理
+要复现在网络流量数据上预训练 ET-BERT 的必要步骤，请按以下步骤操作：
+ 1. 运行 `vocab_process/main.py` 生成加密流量语料库，或直接使用 `corpora/` 中生成的语料库。注意需要修改文件顶部的文件路径和一些配置。
+ 2. 运行 `main/preprocess.py` 预处理加密流量突发语料库。
     ```
        python3 preprocess.py --corpus_path corpora/encrypted_traffic_burst.txt \
                              --vocab_path models/encryptd_vocab.txt \
                              --dataset_path dataset.pt --processes_num 8 --target bert
     ```
- 3. Run `data_process/main.py` to generate the data for downstream tasks if there is a dataset in pcap format that needs to be processed. This process includes two steps. The first is to split pcap files by setting `splitcap=True` in `datasets/main.py:54`  and save as `npy` datasets. Then the second is to generate the fine-tuning data. If you use the shared datasets, then you need to create a folder under the `dataset_save_path` named `dataset` and copy the datasets here.
+ 3. 如果有需要处理的 pcap 格式数据集，运行 `data_process/main.py` 生成下游任务的数据。此过程包括两个步骤。首先是通过在 `datasets/main.py:54` 设置 `splitcap=True` 来分割 pcap 文件，并保存为 `npy` 数据集。然后生成微调数据。如果您使用共享数据集，则需要在 `dataset_save_path` 下创建名为 `dataset` 的文件夹并将数据集复制到这里。
 
-### Pre-training
-To reproduce the steps necessary to finetune ET-BERT on labeled data, run `pretrain.py` to pre-train. If one wishes to continue training on an already pre-trained model, the parameter `--pretrained_model_path` a can be increased.
+### 预训练
+要复现在标记数据上微调 ET-BERT 的必要步骤，运行 `pretrain.py` 进行预训练。如果想在已预训练的模型基础上继续训练，可以增加参数 `--pretrained_model_path`。
 ```
    python3 pre-training/pretrain.py --dataset_path dataset.pt --vocab_path models/encryptd_vocab.txt \
                        --output_model_path models/pre-trained_model.bin \
@@ -117,14 +117,14 @@ To reproduce the steps necessary to finetune ET-BERT on labeled data, run `pretr
                        --embedding word_pos_seg --encoder transformer --mask fully_visible --target bert
 ```
 
-### Fine-tuning on downstream tasks
-To see an example of how to use ET-BERT for the encrypted traffic classification tasks, go to the [Using ET-BERT](#using-et-bert) and `run_classifier.py` script in the `fine-tuning` folder.
+### 下游任务微调
+要了解如何将 ET-BERT 用于加密流量分类任务的示例，请参阅[使用 ET-BERT](#使用-et-bert)部分和 `fine-tuning` 文件夹中的 `run_classifier.py` 脚本。
 
-Note: you'll need to change the path in programes.
+注意：您需要修改程序中的路径。
 <br/>
 
-## Citation
-#### If you are using the work (e.g. pre-trained model) in ET-BERT for academic work, please cite the [paper](https://dl.acm.org/doi/10.1145/3485447.3512217) published in WWW 2022:
+## 引用
+#### 如果您在学术工作中使用了 ET-BERT 的工作（如预训练模型），请引用发表在 WWW 2022 的[论文](https://dl.acm.org/doi/10.1145/3485447.3512217)：
 
 ```
 @inproceedings{lin2022etbert,
@@ -146,5 +146,5 @@ Note: you'll need to change the path in programes.
 
 <br/>
 
-## Contact
-Please post a Github issue if you have any questions. Welcome to discuss new ideas, techniques, and improvements!
+## 联系方式
+如果您有任何问题，请在 Github 上提出 issue。欢迎讨论新的想法、技术和改进！
